@@ -3,6 +3,8 @@ import { NavController } from 'ionic-angular';
 
 import { Geolocation } from '@ionic-native/geolocation';
 
+/*import {GoogleMapsClient} from '@google/maps';*/
+
 declare var google;
 
 @Component({
