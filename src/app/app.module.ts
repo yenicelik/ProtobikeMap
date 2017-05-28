@@ -11,12 +11,14 @@ import {Facebook} from '@ionic-native/facebook';
 import {MyApp} from './app.component';
 import {HomePage} from '../pages/home/home';
 import {LoginPage} from '../pages/login/login';
+import {SinglebikePage} from '../pages/singlebike/singlebike';
 
 @NgModule({
     declarations: [
         MyApp,
         HomePage,
-        LoginPage
+        LoginPage,
+        SinglebikePage
     ],
     imports: [
         BrowserModule,
@@ -26,7 +28,8 @@ import {LoginPage} from '../pages/login/login';
     entryComponents: [
         MyApp,
         HomePage,
-        LoginPage
+        LoginPage,
+        SinglebikePage
     ],
     providers: [
         StatusBar,
