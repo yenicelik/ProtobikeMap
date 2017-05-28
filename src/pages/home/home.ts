@@ -34,7 +34,7 @@ export class HomePage {
         showBackdrop: null,
         enableBackdropDismiss: null
     };
-
+    markersList: any;
     bikeItems: FirebaseListObservable<any[]>;
 
     constructor(public navCtrl: NavController, public geolocation: Geolocation, public modalCtrl: ModalController, private alertCtrl: AlertController, private afDB: AngularFireDatabase) {
@@ -110,7 +110,6 @@ export class HomePage {
 
                 console.log("Location determined");
                 this.userLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-                //TODO change this to user location
                 console.log(this.userLocation);
                 var userPositionMarker = new google.maps.Marker({
                     position: this.userLocation,
@@ -119,8 +118,7 @@ export class HomePage {
                 });
 
                 if (begin) {
-                    //TODO: for deployment, uncomment this!
-                    //this.map.setCenter(userLatLng);
+                    this.map.setCenter(this.userLocation);
                     begin = false;
                 }
 
@@ -145,7 +143,9 @@ export class HomePage {
         //TODO: implement a mechanism that skips this if existent
         //TODO: implement a mechanism that stops GPS recording while doing this
 
-        this.addBikeMarkers();
+        setInterval(() => {
+            this.addBikeMarkers();
+        },1000 * 10);
 
 
     }
@@ -154,45 +154,54 @@ export class HomePage {
         //Add all bikes in here:
 
         try {
+
+            //this.map.clearOverlays(); //does this function even exist?
+
             this.bikeItems.forEach(bike => {
                 console.log("\n");
                 console.log("Firebase content: ");
-                console.log(JSON.stringify(bike));
+                console.log(JSON.stringify(bike[0]));
 
+                //TODO skip if owner is not "0"
+
+                var bikePositionMarker = new google.maps.Marker({
+                    position: {lat: bike[0].positionLat, lng: bike[0].positionLng},
+                    map: this.map,
+                    title: 'Bike No 43364'
+                });
+
+                //The user must have set a location to use the bike, because this is how we will know where he left the bike...
+                bikePositionMarker.addListener('click', () => {
+                    //infoWindow.open(this.map, bikePositionMarker);
+                    if (this.userLocation) {
+                        let bikeModal = this.modalCtrl.create(SinglebikePage, {
+                            usrProfileUid: this.userProfile.uid,
+                            usrProfileName: this.userProfile.displayName,
+                            usrPositionLng: this.userLocation.lng(),
+                            usrPositionLat: this.userLocation.lat()
+
+                        });
+                        bikeModal.onDidDismiss(data => {
+                            console.log(JSON.stringify(data));
+                            this.curBooking = data;
+                            console.log(this.curBooking);
+                        });
+                        bikeModal.present();
+                    }
+                });
+
+
+                //this.markersList.push(bikePositionMarker);
 
 
             });
         }
         catch (e) {
-            console.log(e);
+            console.log("Start of error");
+            console.log(e.message);
             console.log("End of error");
         }
 
-        var bikePositionMarker = new google.maps.Marker({
-            position: {lat: 47.376600, lng: 8.547700},
-            map: this.map,
-            title: 'Bike No 43364'
-        });
-
-        //The user must have set a location to use the bike, because this is how we will know where he left the bike...
-        bikePositionMarker.addListener('click', () => {
-            //infoWindow.open(this.map, bikePositionMarker);
-            if (this.userLocation) {
-                let bikeModal = this.modalCtrl.create(SinglebikePage, {
-                    usrProfileUid: this.userProfile.uid,
-                    usrProfileName: this.userProfile.displayName,
-                    usrPositionLng: this.userLocation.lng(),
-                    usrPositionLat: this.userLocation.lat()
-
-                });
-                bikeModal.onDidDismiss(data => {
-                    console.log(JSON.stringify(data));
-                    this.curBooking = data;
-                    console.log(this.curBooking);
-                });
-                bikeModal.present();
-            }
-        });
 
     }
 
@@ -227,11 +236,11 @@ export class HomePage {
         let saveData = {
             bike_no: 0,
             current_user: "0",
-            positionLat: 47.376650,
-            positionLng: 8.547750,
+            //positionLat: 47.376650,
+            //positionLng: 8.547750,
             //TODO: uncomment for deployment
-            //positionLat: this.userLocation.lat(),
-            //positionLng: this.userLocation.lng()
+            positionLat: this.userLocation.lat(),
+            positionLng: this.userLocation.lng()
         }
 //        this.bikeItems.push({0: saveData});
 //        bikeItems.remove('key-of-some-data');
