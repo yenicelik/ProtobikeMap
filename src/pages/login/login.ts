@@ -2,7 +2,9 @@ import {Component} from '@angular/core';
 import {IonicPage, NavController, NavParams, ViewController} from 'ionic-angular';
 
 import {Facebook} from '@ionic-native/facebook';
-import firebase from 'firebase';
+
+import { AngularFireAuth } from 'angularfire2/auth';
+import * as firebase from 'firebase';
 
 /**
  * Generated class for the LoginPage page.
@@ -19,8 +21,16 @@ export class LoginPage {
 
     userProfile: any = null;
 
-    constructor(public navCtrl: NavController, public navParams: NavParams, private facebook: Facebook, private viewCtrl: ViewController) {
-
+    constructor(public navCtrl: NavController, public navParams: NavParams, private facebook: Facebook, private viewCtrl: ViewController, private afAuth: AngularFireAuth) {
+        /*
+         afAuth.authState.subscribe(user => {
+         if (!user) {
+         this.displayName = null;
+         return;
+         }
+         this.displayName = user.displayName;
+         });
+         */
     }
 
     ionViewWillEnter(){
@@ -33,6 +43,7 @@ export class LoginPage {
     }
 
     facebookLogin(): void {
+         //See if this is needed anywhere now...
         this.facebook.login(['email']).then( (response) => {
             console.log("Facebook logging in...");
 
@@ -51,6 +62,11 @@ export class LoginPage {
                 console.log("Firebase failure: " + JSON.stringify(error));
             });
         }).catch((error) => { console.log(error) });
+    }
+
+    //Sign out
+    signOut() {
+        this.afAuth.auth.signOut();
     }
 
 }

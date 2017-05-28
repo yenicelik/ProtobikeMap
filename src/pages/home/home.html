@@ -12,25 +12,27 @@
 
     </div>
 
-    <ion-footer>
-        <ion-toolbar *ngIf="curBooking">
-            <ion-grid>
-                <ion-row >
-                    <ion-col col>
-                        Code: 4391
-                    </ion-col>
+    <div ng-if='showFooter'>
+        <ion-footer id="infoFooter">
+            <ion-toolbar>
+                <ion-grid>
+                    <ion-row>
+                        <ion-col col>
+                            Code: 4391
+                        </ion-col>
 
-                    <ion-col col>
-                        Stop Riding
-                    </ion-col>
+                        <ion-col col>
+                            <button (click)="stopRiding()" >Stop Riding</button>
+                        </ion-col>
 
-                    <ion-col col>
-                        Bike Number
-                    </ion-col>
-                </ion-row>
-            </ion-grid>
-        </ion-toolbar>
-    </ion-footer>
+                        <ion-col col>
+                            Bike Number
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+            </ion-toolbar>
+        </ion-footer>
+    </div>
 
 
 </ion-content>

@@ -1,12 +1,15 @@
 import {Component, ViewChild, ElementRef} from '@angular/core';
-import {ModalController} from 'ionic-angular';
-import {NavController} from 'ionic-angular';
+import {ModalController, Platform} from 'ionic-angular';
+import {NavController, AlertController} from 'ionic-angular';
 
 import {Geolocation} from '@ionic-native/geolocation';
 
 /*import {GoogleMapsClient} from '@google/maps';*/
 import {LoginPage} from '../login/login';
 import {SinglebikePage} from '../singlebike/singlebike';
+
+import {AngularFireDatabase, FirebaseListObservable} from 'angularfire2/database';
+import * as firebase from 'firebase';
 
 declare var google;
 
@@ -16,15 +19,27 @@ declare var google;
 })
 export class HomePage {
 
+    @ViewChild('infoFooter') infoFooter: ElementRef;
     @ViewChild('map') mapElement: ElementRef;
     map: any;
     userProfile: any;
     userLocation: any;
-    curBooking: any;
+    curBooking: any = {
+        data: null,
+        usrProfileUid: null,
+        usrProfileName: null,
+        usrPositionLng: null,
+        usrPositionLat: null,
+        opts: null,
+        showBackdrop: null,
+        enableBackdropDismiss: null
+    };
 
+    bikeItems: FirebaseListObservable<any[]>;
 
-    constructor(public navCtrl: NavController, public geolocation: Geolocation, public modalCtrl: ModalController) {
+    constructor(public navCtrl: NavController, public geolocation: Geolocation, public modalCtrl: ModalController, private alertCtrl: AlertController, private afDB: AngularFireDatabase) {
         console.log("Home page creater loaded");
+        this.bikeItems = afDB.list('/bikes');
     }
 
 
@@ -115,14 +130,49 @@ export class HomePage {
             });
         }, 1000 * 10);
 
+        this.map.setCenter({lat: 47.376600, lng: 8.547700});
+
+        //After page has loaded, we ask the user for input!
+        //TODO: remove this after marker was implemented
+        let profileModal = this.modalCtrl.create(LoginPage);
+        profileModal.onDidDismiss(data => {
+            console.log(JSON.stringify(data));
+            this.userProfile = data;
+        });
+        profileModal.present();
+
+        //this.userProfile = this.navCtrl.push(LoginPage, {callback: getUserCallback});
+        //TODO: implement a mechanism that skips this if existent
+        //TODO: implement a mechanism that stops GPS recording while doing this
+
+        this.addBikeMarkers();
+
+
+    }
+
+    addBikeMarkers() {
+        //Add all bikes in here:
+
+        try {
+            this.bikeItems.forEach(bike => {
+                console.log("\n");
+                console.log("Firebase content: ");
+                console.log(JSON.stringify(bike));
+
+
+
+            });
+        }
+        catch (e) {
+            console.log(e);
+            console.log("End of error");
+        }
 
         var bikePositionMarker = new google.maps.Marker({
             position: {lat: 47.376600, lng: 8.547700},
             map: this.map,
             title: 'Bike No 43364'
         });
-
-        this.map.setCenter({lat: 47.376600, lng: 8.547700});
 
         //The user must have set a location to use the bike, because this is how we will know where he left the bike...
         bikePositionMarker.addListener('click', () => {
@@ -135,7 +185,7 @@ export class HomePage {
                     usrPositionLat: this.userLocation.lat()
 
                 });
-                profileModal.onDidDismiss(data => {
+                bikeModal.onDidDismiss(data => {
                     console.log(JSON.stringify(data));
                     this.curBooking = data;
                     console.log(this.curBooking);
@@ -144,18 +194,54 @@ export class HomePage {
             }
         });
 
-        //After page has loaded, we ask the user for input!
-        //TODO: remove this after marker was implemented
-        let profileModal = this.modalCtrl.create(LoginPage);
-        profileModal.onDidDismiss(data => {
-            console.log(JSON.stringify(data));
-            this.userProfile = data
-        });
-        profileModal.present();
+    }
 
-        //this.userProfile = this.navCtrl.push(LoginPage, {callback: getUserCallback});
-        //TODO: implement a mechanism that skips this if existent
-        //TODO: implement a mechanism that stops GPS recording while doing this
+    stopRiding() {
+        let alert = this.alertCtrl.create({
+            title: 'Stop riding',
+            message: 'Do you want to stop riding?', //TODO phrase this more friendly
+            buttons: [
+                {
+                    text: 'Stop Riding',
+                    handler: () => {
+                        console.log('Stop riding');
+                        //Update bike locations
+                        this.updateBikeLocation();
+                    }
+                },
+                {
+                    text: 'Continue riding',
+                    handler: () => {
+                        console.log('Continue riding');
+                        //Do nothing
+                    }
+                }
+            ]
+        });
+        alert.present();
+    }
+
+    updateBikeLocation() {
+
+        console.log("Updating bike data");
+        let saveData = {
+            bike_no: 0,
+            current_user: "0",
+            positionLat: 47.376650,
+            positionLng: 8.547750,
+            //TODO: uncomment for deployment
+            //positionLat: this.userLocation.lat(),
+            //positionLng: this.userLocation.lng()
+        }
+//        this.bikeItems.push({0: saveData});
+//        bikeItems.remove('key-of-some-data');
+
+        this.bikeItems.update("0", saveData);
+
+        //console.log(JSON.stringify(position));
+        //firebase.database().ref('bikes/0').set(saveData); //TODO extend this to multiple bikes //TODO add a 'sry, no gps, bike could not be booked' option
+
+
     }
 
 }
