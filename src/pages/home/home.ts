@@ -24,7 +24,7 @@ export class HomePage {
     map: any;
     userProfile: any;
     userLocation: any;
-    curBooking: any = {
+    curBooking: any = null;/*{
         data: null,
         usrProfileUid: null,
         usrProfileName: null,
@@ -33,7 +33,7 @@ export class HomePage {
         opts: null,
         showBackdrop: null,
         enableBackdropDismiss: null
-    };
+    };*/
     markersList: any;
     bikeItems: FirebaseListObservable<any[]>;
 
@@ -50,6 +50,8 @@ export class HomePage {
 
     ionViewDidLoad() {
         console.log("ngAfterViewInit loaded");
+        this.infoFooter.nativeElement.classList.add('keyboardopen');
+
 
         let mapEle = document.getElementById('map');
         let mapOpt = {
@@ -106,6 +108,11 @@ export class HomePage {
 
         var begin = true;
         setInterval(() => {
+
+            console.log("Current booking is: ");
+            console.log(this.curBooking);
+            console.log("\n");
+
             this.geolocation.getCurrentPosition().then((position) => {
 
                 console.log("Location determined");
@@ -184,6 +191,7 @@ export class HomePage {
                         bikeModal.onDidDismiss(data => {
                             console.log(JSON.stringify(data));
                             this.curBooking = data;
+                            this.infoFooter.nativeElement.classList.remove('keyboardopen');
                             console.log(this.curBooking);
                         });
                         bikeModal.present();
@@ -228,6 +236,7 @@ export class HomePage {
             ]
         });
         alert.present();
+        this.infoFooter.nativeElement.classList.add('keyboardopen');
     }
 
     updateBikeLocation() {
