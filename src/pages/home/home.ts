@@ -24,7 +24,7 @@ export class HomePage {
     map: any;
     userProfile: any;
     userLocation: any;
-    curBooking: any = null;/*{
+    curBooking: any = null;/*{ //TODO: download this to this user, assuming internet breaks down during ride! Potentially, save this in cache, and upload at next internet connection point
         data: null,
         usrProfileUid: null,
         usrProfileName: null,
@@ -106,6 +106,8 @@ export class HomePage {
 
         //Adding a sample marker to the app
 
+        this.addBikeMarkers();
+
         var begin = true;
         setInterval(() => {
 
@@ -118,11 +120,11 @@ export class HomePage {
                 console.log("Location determined");
                 this.userLocation = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
                 console.log(this.userLocation);
-                var userPositionMarker = new google.maps.Marker({
+                /*var userPositionMarker = new google.maps.Marker({
                     position: this.userLocation,
                     map: this.map,
                     title: 'Your position'
-                });
+                });*/
 
                 if (begin) {
                     this.map.setCenter(this.userLocation);
@@ -149,11 +151,6 @@ export class HomePage {
         //this.userProfile = this.navCtrl.push(LoginPage, {callback: getUserCallback});
         //TODO: implement a mechanism that skips this if existent
         //TODO: implement a mechanism that stops GPS recording while doing this
-
-        setInterval(() => {
-            this.addBikeMarkers();
-        },1000 * 10);
-
 
     }
 
@@ -197,7 +194,6 @@ export class HomePage {
                         bikeModal.present();
                     }
                 });
-
 
                 //this.markersList.push(bikePositionMarker);
 
